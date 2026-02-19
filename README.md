@@ -51,7 +51,7 @@ This prototype demonstrates the viability of paint shop digitalization using AWS
 | **Monthly Cost** | $1.45 - $5.00 | ✅ 3-10% of budget |
 | **Health Score** | 9.8/10 | ⭐⭐⭐ |
 
-See [Project Health Report](PROJECT_HEALTH_REPORT_FINAL.md) for detailed status.
+See [Project Health Report](reports/PROJECT_HEALTH_REPORT_FINAL.md) for detailed status.
 
 ### 📊 Monitored Variables
 
@@ -469,6 +469,10 @@ cd ..
 │   ├── teardown.sh        # Safe resource destruction
 │   ├── check_costs.sh     # Cost monitoring
 │   ├── verify_cleanup.sh  # Cleanup verification
+│   ├── analyze_csvs.py    # CSV analysis tool
+│   ├── check_data.py      # Data validation
+│   ├── generate_report.py # Report generation
+│   ├── create_final_report.py # Final report creation
 │   └── README.md
 │
 ├── docs/                  # Additional documentation
@@ -476,13 +480,50 @@ cd ..
 │   ├── VARIABLES.md       # Variable configuration guide
 │   ├── COSTS.md           # Cost analysis and optimization
 │   ├── TROUBLESHOOTING.md # Common issues and solutions
-│   └── IOT_SETUP.md       # IoT Core setup guide
+│   ├── IOT_SETUP.md       # IoT Core setup guide
+│   ├── SECURITY.md        # Security configuration
+│   └── IAM_PERMISSIONS.md # IAM roles documentation
+│
+├── project-docs/          # Project documentation
+│   ├── GUIA_TESTING_PRINCIPIANTES.md  # Testing guide (Spanish)
+│   ├── DEPLOYMENT_INSTRUCTIONS.md     # Detailed deployment guide
+│   ├── VALIDATION_INSTRUCTIONS.md     # Validation procedures
+│   ├── DASHBOARD_VERIFICATION_GUIDE.md # Dashboard testing
+│   ├── PROYECTO_LISTO_PARA_TESTING.md # Project readiness (Spanish)
+│   ├── README_SIMPLE.md               # Beginner-friendly overview
+│   ├── RESUMEN_PARA_TI.md             # Summary for testers (Spanish)
+│   ├── INSTRUCCIONES_FINALES_PARA_TI.md # Final instructions (Spanish)
+│   ├── GIT_SETUP_COMPLETO.md          # Git setup guide (Spanish)
+│   └── FINAL_VALIDATION_GUIDE.md      # Final validation steps
+│
+├── reports/               # Project reports and analysis
+│   ├── PROJECT_HEALTH_REPORT_FINAL.md # Project status (9.8/10)
+│   ├── PROJECT_HEALTH_REPORT.md       # Previous health report
+│   ├── IAM_SECURITY_AUDIT.md          # Security audit results
+│   ├── CHECKPOINT_5_SUMMARY.md        # Checkpoint summaries
+│   ├── CHECKPOINT_9_VERIFICATION.md
+│   ├── TASK_10_COMPLETION_SUMMARY.md  # Task summaries
+│   ├── TASK_20_EXECUTIVE_SUMMARY.md
+│   ├── analysis_report.md             # Variable analysis
+│   ├── NEW_CHAT_SUMMARY.md            # Session summaries
+│   ├── session1ResolucionDeDudas.md
+│   ├── variableAnalisys-by-Amazon-Q.md
+│   └── posiblePlanTrabajo-SketchedByAmazonQ.md
+│
+├── attachments/           # Project attachments and references
+│   ├── Paint-LAY-OUT.pdf              # Paint shop layout
+│   ├── KMX-PA-PT-F-001.csv            # Pre-Treatment variables
+│   ├── KMX-PA-PE-F-001.csv            # E-Coat variables
+│   ├── KMX-PA-PE-F-001-Reporte-diario-laboratorio-ED.xlsx
+│   ├── Ejemplo-Template-KIA-VF_IMU26.pptx
+│   ├── Arquitectura-tecnica-actual-Paint-Shop.md
+│   ├── Hoja-definicion-inicial-reto.md
+│   ├── Guiones-Videos-Reto-KIA.md
+│   └── Rubrica-evaluacion.md
 │
 ├── .env.example           # Environment template
 ├── requirements.txt       # Python dependencies
-├── README.md              # This file
-├── PROJECT_HEALTH_REPORT_FINAL.md  # Project status
-└── DEPLOYMENT_INSTRUCTIONS.md      # Detailed deployment guide
+└── README.md              # This file (project overview)
 ```
 
 ---
@@ -708,6 +749,9 @@ See [Cost Analysis Guide](docs/COSTS.md) for detailed breakdown and optimization
 | Document | Description |
 |----------|-------------|
 | **[README.md](README.md)** | Project overview and quick start (this file) |
+| **[DEPLOYMENT_INSTRUCTIONS.md](project-docs/DEPLOYMENT_INSTRUCTIONS.md)** | Detailed deployment guide |
+| **[GUIA_TESTING_PRINCIPIANTES.md](project-docs/GUIA_TESTING_PRINCIPIANTES.md)** | Testing guide for beginners (Spanish) |
+| **[PROJECT_HEALTH_REPORT_FINAL.md](reports/PROJECT_HEALTH_REPORT_FINAL.md)** | Complete project status (9.8/10) |
 | **[API.md](docs/API.md)** | Complete REST API reference with examples |
 | **[VARIABLES.md](docs/VARIABLES.md)** | Variable configuration guide (100 variables) |
 | **[COSTS.md](docs/COSTS.md)** | Detailed cost analysis and optimization |
@@ -715,8 +759,6 @@ See [Cost Analysis Guide](docs/COSTS.md) for detailed breakdown and optimization
 | **[IAM_PERMISSIONS.md](docs/IAM_PERMISSIONS.md)** | IAM roles and least privilege documentation |
 | **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | Common issues and solutions |
 | **[IOT_SETUP.md](docs/IOT_SETUP.md)** | IoT Core setup and configuration |
-| **[PROJECT_HEALTH_REPORT_FINAL.md](PROJECT_HEALTH_REPORT_FINAL.md)** | Complete project status (9.8/10) |
-| **[DEPLOYMENT_INSTRUCTIONS.md](DEPLOYMENT_INSTRUCTIONS.md)** | Detailed deployment guide |
 
 ### Component Documentation
 
