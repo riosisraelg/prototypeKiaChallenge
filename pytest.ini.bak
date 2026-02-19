@@ -1,0 +1,65 @@
+[pytest]
+# Pytest configuration for KIA Paint Shop IoT Prototype
+
+# Test discovery patterns
+python_files = test_*.py
+python_classes = Test*
+python_functions = test_*
+
+# Test paths
+testpaths = tests
+
+# Minimum Python version
+minversion = 3.11
+
+# Add current directory to Python path
+pythonpath = .
+
+# Output options
+addopts = 
+    -v
+    --strict-markers
+    --tb=short
+    --cov=simulator
+    --cov=lambdas
+    --cov-report=html
+    --cov-report=term-missing
+    --hypothesis-show-statistics
+
+# Markers for organizing tests
+markers =
+    unit: Unit tests
+    integration: Integration tests requiring AWS resources
+    property: Property-based tests using Hypothesis
+    slow: Slow running tests
+    simulator: Tests for simulator components
+    lambda: Tests for Lambda functions
+    api: Tests for API handlers
+
+# Hypothesis settings
+hypothesis_profile = default
+
+# Ignore paths
+norecursedirs = 
+    .git
+    .tox
+    dist
+    build
+    *.egg
+    node_modules
+    dashboard
+
+# Coverage options
+[coverage:run]
+source = simulator,lambdas
+omit = 
+    */tests/*
+    */test_*.py
+    */__pycache__/*
+    */venv/*
+    */env/*
+
+[coverage:report]
+precision = 2
+show_missing = True
+skip_covered = False
