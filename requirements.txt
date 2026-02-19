@@ -1,0 +1,30 @@
+# AWS SDK for Python
+boto3==1.34.34
+botocore==1.34.34
+
+# MQTT client for IoT communication
+paho-mqtt==1.6.1
+
+# Testing frameworks
+pytest==7.4.4
+pytest-cov==4.1.0
+pytest-asyncio==0.23.3
+
+# Property-based testing
+hypothesis==6.92.2
+
+# Data manipulation and validation
+numpy==1.26.3
+pandas==2.1.4
+pydantic==2.5.3
+
+# Utilities
+python-dotenv==1.0.0
+PyYAML==6.0.1
+requests==2.31.0
+
+# AWS Lambda dependencies (for local testing)
+aws-lambda-powertools==2.31.0
+
+# Mocking for tests
+moto==4.2.14
