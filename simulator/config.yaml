@@ -1,0 +1,39 @@
+# KIA Paint Shop IoT Simulator Configuration
+
+# Variables configuration
+variables:
+  pre_treatment: "data/KMX-PA-PT-F-001.csv"
+  e_coat: "data/KMX-PA-PE-F-001.csv"
+  production_control: "data/production_control.csv"
+
+# MQTT/IoT Core configuration
+mqtt:
+  endpoint: ""  # Will be populated from Terraform outputs
+  port: 8883
+  cert_path: "certs/device.crt"
+  key_path: "certs/device.key"
+  ca_path: "certs/AmazonRootCA1.pem"
+  client_id: "kia-paintshop-simulator"
+  topic_prefix: "kia/paintshop"
+  qos: 1
+  keep_alive: 60
+
+# Simulation parameters
+simulation:
+  interval_seconds: 30
+  anomaly_probability: 0.05  # 5% chance of generating anomaly
+  max_variables: 100
+  enable_alarms: true
+  
+# Logging configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  format: "json"  # json or text
+  file: "simulator.log"
+
+# Retry configuration
+retry:
+  max_attempts: 5
+  initial_delay: 1
+  max_delay: 60
+  backoff_multiplier: 2
