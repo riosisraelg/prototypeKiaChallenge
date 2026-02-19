@@ -1,0 +1,10 @@
+# Lambda API Handlers Dependencies
+# Python 3.11
+
+# AWS SDK
+boto3>=1.34.0
+
+# Note: These are included in Lambda runtime, but listed for local development
+# - json (built-in)
+# - logging (built-in)
+# - datetime (built-in)
