@@ -1,1070 +1,332 @@
-# KIA Paint Shop IoT Prototype
+# 🎯 KIA Paint Shop IoT Prototype - Testing Branch
 
-> Serverless AWS solution for digitalizing and monitoring 100 variables from KIA's paint shop manufacturing process.
+> **¡Bienvenida!** Este es el branch de testing para validar el prototipo MVP.
 
-[![AWS](https://img.shields.io/badge/AWS-IoT%20Core-orange)](https://aws.amazon.com/iot-core/)
-[![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/)
-[![React](https://img.shields.io/badge/React-18.2-61dafb)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-3178c6)](https://www.typescriptlang.org/)
-[![Terraform](https://img.shields.io/badge/Terraform-1.5+-844fba)](https://www.terraform.io/)
+[![Status](https://img.shields.io/badge/Status-Ready%20for%20Testing-success)](project-docs/PROYECTO_LISTO_PARA_TESTING.md)
+[![MVP](https://img.shields.io/badge/MVP-100%25%20Complete-brightgreen)](reports/PROJECT_HEALTH_REPORT_FINAL.md)
+[![Tests](https://img.shields.io/badge/Tests-212%2B-blue)](tests/)
 [![Cost](https://img.shields.io/badge/Cost-$1--5%2Fmonth-green)](docs/COSTS.md)
-[![Status](https://img.shields.io/badge/Status-Production%20Ready-success)](PROJECT_HEALTH_REPORT_FINAL.md)
-
-**Prototipo serverless en AWS para digitalizar y monitorear 100 variables del proceso de pintura (Paint Shop) de KIA.**
 
 ---
 
-## 📋 Table of Contents
+## 🚀 Empieza Aquí
 
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Features](#features)
-- [Quick Start](#quick-start)
-- [Project Structure](#project-structure)
-- [Testing](#testing)
-- [Cost Analysis](#cost-analysis)
-- [Documentation](#documentation)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
+### ¿Qué es este proyecto?
 
----
+Prototipo serverless en AWS para digitalizar y monitorear **100 variables** del proceso de pintura (Paint Shop) de KIA.
 
-## Overview
+**Tecnologías:**
+- ☁️ AWS (IoT Core, Lambda, DynamoDB, S3, API Gateway)
+- 🐍 Python 3.11 (Backend + Simulador)
+- ⚛️ React + TypeScript (Dashboard)
+- 🏗️ Terraform (Infrastructure as Code)
 
-### 🎯 Prototype Objectives
-
-This prototype demonstrates the viability of paint shop digitalization using AWS IoT services while maintaining strict cost controls.
-
-**Key Goals:**
-- ✅ **Capability Demonstration**: Prove AWS IoT viability for paint shop digitalization
-- ✅ **Cost Control**: Maintain monthly costs under $50 USD (actual: $1-5/month)
-- ✅ **Ephemeral Infrastructure**: Enable complete environment creation and destruction
-- ✅ **Scalability Proof**: Test with ~100 variables (subset of complete system)
-
-### 📊 Project Status
-
-| Metric | Value | Status |
-|--------|-------|--------|
-| **MVP Completion** | 100% | ✅ Complete |
-| **Tasks Complete** | 15/20 (75%) | ✅ On Track |
-| **Test Coverage** | 212+ tests | ✅ Excellent |
-| **Monthly Cost** | $1.45 - $5.00 | ✅ 3-10% of budget |
-| **Health Score** | 9.8/10 | ⭐⭐⭐ |
-
-See [Project Health Report](reports/PROJECT_HEALTH_REPORT_FINAL.md) for detailed status.
-
-### 📊 Monitored Variables
-
-The prototype monitors **100 variables** across three paint shop process areas:
-
-| Area | Variables | Description |
-|------|-----------|-------------|
-| **Pre-Treatment (PT)** | 48 | Surface cleaning and preparation (temperature, pH, concentration, flow, pressure) |
-| **E-Coat (ED)** | 18 | Electrodeposition coating (voltage, current, temperature, thickness, conductivity) |
-| **Production Control** | 34 | Production monitoring (line speed, cycle time, quality metrics, energy consumption) |
-| **Total** | **100** | Complete paint shop digitalization prototype |
-
-See [Variable Configuration Guide](docs/VARIABLES.md) for complete details.
+**Estado del MVP:**
+- ✅ 100% completo
+- ✅ 212+ tests pasando
+- ✅ Costo: $1-5/mes (muy por debajo del presupuesto de $50)
+- ✅ Health Score: 9.8/10
 
 ---
 
-## Architecture
+## 📋 Tu Misión: Validar el MVP
 
-### 🏗️ System Architecture
+Tu trabajo es **probar que todo funciona correctamente** siguiendo la guía de testing paso a paso.
 
-```
-┌─────────────────┐
-│   Simulator     │  Python 3.11 + MQTT/TLS
-│  (100 vars @    │  Generates realistic sensor data
-│   30s interval) │  with anomaly detection
-└────────┬────────┘
-         │ MQTT/TLS (X.509)
-         ↓
-┌─────────────────┐
-│  AWS IoT Core   │  Message broker with IoT Rules
-│  (500K msg/mo)  │  Topic: kia/paintshop/{area}/{var}
-└────────┬────────┘
-         │ IoT Rule
-         ↓
-┌─────────────────┐     ┌──────────────────┐
-│ Lambda: Ingest  │────→│   DynamoDB:      │
-│  Validate JSON  │     │   sensor-data    │
-│  Store data     │     │   (30-day TTL)   │
-│  Publish event  │     └──────────────────┘
-└────────┬────────┘
-         │ EventBridge
-         ↓
-┌─────────────────┐     ┌──────────────────┐
-│ Lambda: Process │────→│   DynamoDB:      │
-│  Detect anomaly │     │   alarms         │
-│  Generate alarm │     │   (no TTL)       │
-└─────────────────┘     └──────────────────┘
-         │
-         │ EventBridge (every 5 min)
-         ↓
-┌─────────────────┐     ┌──────────────────┐
-│Lambda:Statistics│────→│   DynamoDB:      │
-│  Calculate stats│     │   statistics     │
-│  (mean/min/max) │     │   (7-day TTL)    │
-└─────────────────┘     └──────────────────┘
-         │
-         │ API Gateway (REST)
-         ↓
-┌─────────────────┐     ┌──────────────────┐
-│  5 API Lambdas  │────→│  React Dashboard │
-│  - list vars    │     │  - Variable list │
-│  - get data     │     │  - Time charts   │
-│  - list alarms  │     │  - Alarm panel   │
-│  - acknowledge  │     │  - Statistics    │
-│  - statistics   │     └──────────────────┘
-└─────────────────┘
-         │
-         ↓
-┌─────────────────┐
-│   S3 Bucket     │  Historical archival
-│  (Parquet fmt)  │  Lifecycle: Glacier@60d, Delete@90d
-└─────────────────┘
-```
+### 🎯 Objetivos de Testing
 
-### 🔧 AWS Services Used
-
-| Service | Purpose | Configuration |
-|---------|---------|---------------|
-| **IoT Core** | MQTT message ingestion | X.509 authentication, IoT Rules |
-| **Lambda** | Serverless compute | 8 functions (Python 3.11, 256-512 MB) |
-| **DynamoDB** | NoSQL data storage | 4 tables, on-demand billing, TTL enabled |
-| **S3** | Historical archival | Encryption, lifecycle policies |
-| **API Gateway** | REST API | 5 endpoints, API key auth, CORS |
-| **EventBridge** | Event orchestration | Custom event bus, scheduled rules |
-| **CloudWatch** | Monitoring & logging | Log groups, metrics, alarms |
-| **IAM** | Access control | Least privilege roles |
+1. ✅ Verificar que la infraestructura se despliega correctamente
+2. ✅ Validar que el simulador envía datos a AWS
+3. ✅ Confirmar que las Lambda functions procesan los datos
+4. ✅ Probar que el API funciona correctamente
+5. ✅ Verificar que el dashboard muestra los datos en tiempo real
+6. ✅ Validar que las alarmas se generan correctamente
+7. ✅ Confirmar que los costos están dentro del presupuesto
+8. ✅ Documentar cualquier problema encontrado
 
 ---
 
-## Features
+## 📚 Documentación para Testing
 
-### ✨ Core Capabilities
+### 🌟 EMPIEZA AQUÍ (Orden Recomendado)
 
-**Data Ingestion:**
-- ✅ MQTT/TLS communication with X.509 certificate authentication
-- ✅ 100 variables monitored at 30-second intervals
-- ✅ Realistic data generation with configurable anomaly probability (5%)
-- ✅ Automatic reconnection with exponential backoff
+#### 1️⃣ Primero: Entender el Proyecto
+📖 **[README_SIMPLE.md](project-docs/README_SIMPLE.md)**
+- Explicación sencilla del proyecto
+- Qué hace cada componente
+- Arquitectura simplificada
+- **Tiempo estimado: 10 minutos**
 
-**Data Processing:**
-- ✅ Real-time anomaly detection with threshold-based alarms
-- ✅ Severity calculation (warning <10%, critical ≥10%)
-- ✅ Statistical aggregations every 5 minutes (mean, min, max, stddev)
-- ✅ Event-driven architecture with EventBridge
+#### 2️⃣ Segundo: Verificar que Todo Está Listo
+✅ **[PROYECTO_LISTO_PARA_TESTING.md](project-docs/PROYECTO_LISTO_PARA_TESTING.md)**
+- Checklist de componentes
+- Validación de archivos
+- Verificación de scripts
+- **Tiempo estimado: 5 minutos**
 
-**Data Storage:**
-- ✅ DynamoDB with automatic TTL (30 days for sensor data, 7 days for statistics)
-- ✅ S3 archival with lifecycle policies (Glacier@60d, Delete@90d)
-- ✅ Efficient query patterns with GSI for area and status filtering
+#### 3️⃣ Tercero: Guía de Testing Completa
+🧪 **[GUIA_TESTING_PRINCIPIANTES.md](project-docs/GUIA_TESTING_PRINCIPIANTES.md)** ⭐ PRINCIPAL
+- **1,400+ líneas** de guía paso a paso
+- 8 fases de testing detalladas
+- Comandos explicados para principiantes
+- Troubleshooting incluido
+- Glosario de términos
+- Template de reporte
+- **Tiempo estimado: 4-6 horas (con descansos)**
 
-**REST API:**
-- ✅ 5 endpoints: list variables, get data, list alarms, acknowledge alarms, get statistics
-- ✅ API key authentication with usage plans (1000 req/day, 100 req/sec)
-- ✅ CORS enabled for dashboard integration
-- ✅ Consistent error handling and structured logging
+#### 4️⃣ Cuarto: Validación del Dashboard
+🖥️ **[DASHBOARD_VERIFICATION_GUIDE.md](project-docs/DASHBOARD_VERIFICATION_GUIDE.md)**
+- Cómo verificar el dashboard
+- Qué debe aparecer en cada sección
+- Cómo probar las funcionalidades
+- **Tiempo estimado: 30 minutos**
 
-**Dashboard:**
-- ✅ React 18 + TypeScript with Tailwind CSS
-- ✅ Real-time variable monitoring with auto-refresh (30s)
-- ✅ Interactive time-series charts with Recharts
-- ✅ Alarm panel with severity indicators and acknowledgment
-- ✅ Statistics cards with aggregated metrics
-- ✅ Connection status monitoring
-
-**Testing:**
-- ✅ 212+ tests (property-based + unit tests)
-- ✅ Hypothesis for correctness validation
-- ✅ 100% pass rate on all test suites
-- ✅ AWS service mocking with moto
-
-**Operations:**
-- ✅ Infrastructure as Code with Terraform (12 files, 88KB)
-- ✅ Management scripts (setup, teardown, cost monitoring, cleanup verification)
-- ✅ CloudWatch logging and monitoring
-- ✅ Complete ephemeral infrastructure (create/destroy on demand)
+#### 5️⃣ Quinto: Validación Final
+✨ **[FINAL_VALIDATION_GUIDE.md](project-docs/FINAL_VALIDATION_GUIDE.md)**
+- Checklist final
+- Verificación de costos
+- Cleanup y teardown
+- **Tiempo estimado: 30 minutos**
 
 ---
 
-## Quick Start
-
-### Prerequisites
-
-Ensure you have the following installed:
-
-| Tool | Version | Purpose |
-|------|---------|---------|
-| **AWS CLI** | >= 2.0 | AWS service interaction |
-| **Terraform** | >= 1.5.0 | Infrastructure deployment |
-| **Python** | >= 3.11 | Lambda functions & simulator |
-| **Node.js** | >= 18 | Dashboard development |
-| **npm** | >= 9 | Package management |
-
-**AWS Account Requirements:**
-- Active AWS account with credentials configured
-- IAM permissions for IoT, Lambda, DynamoDB, S3, API Gateway, CloudWatch
-- AWS CLI configured: `aws configure`
-
-### 🚀 Deployment Steps
-
-#### 1. Clone and Configure
-
-```bash
-# Clone repository
-git clone <repository-url>
-cd kia-paint-shop-iot-prototype
-
-# Create environment file
-cp .env.example .env
-
-# Edit .env with your AWS configuration
-# AWS_REGION=us-east-1
-# AWS_PROFILE=default
-```
-
-#### 2. Deploy Infrastructure
-
-```bash
-cd terraform
-
-# Initialize Terraform
-terraform init
-
-# Review deployment plan
-terraform plan
-
-# Deploy infrastructure (takes 5-10 minutes)
-terraform apply
-
-# Save outputs for later use
-terraform output -json > ../outputs.json
-terraform output api_url
-terraform output api_key
-terraform output iot_endpoint
-```
-
-**Expected Resources Created:**
-- 4 DynamoDB tables
-- 8 Lambda functions
-- 1 API Gateway with 5 endpoints
-- 1 IoT Thing with certificates
-- 1 S3 bucket
-- CloudWatch log groups and alarms
-- EventBridge rules
-- IAM roles and policies
-
-#### 3. Configure Simulator
-
-```bash
-cd ../simulator
-
-# Install Python dependencies
-pip install -r ../requirements.txt
-
-# Certificates are automatically created by Terraform
-# They should be in simulator/certs/
-
-# Update config.yaml with IoT endpoint
-# Get endpoint from: terraform output iot_endpoint
-nano config.yaml
-
-# Test simulator locally
-python simulator.py --config config.yaml
-```
-
-**Simulator Output:**
-```
-[INFO] Loading configuration from config.yaml
-[INFO] Loaded 97 variables from CSV files
-[INFO] Connecting to IoT Core: xxxxx.iot.us-east-1.amazonaws.com
-[INFO] Connected successfully
-[INFO] Publishing data for 100 variables every 30 seconds
-[INFO] Published 100 messages (batch 1)
-```
-
-#### 4. Deploy Dashboard
-
-The dashboard can be deployed using two methods:
-
-**Option A: S3 Static Hosting (Recommended for Prototype)**
-
-```bash
-# Automated deployment script
-./scripts/deploy_dashboard_s3.sh
-```
-
-This will:
-- Build the React application
-- Create S3 bucket for hosting
-- Configure static website hosting
-- Upload build files
-- Provide website URL
-
-**Cost:** ~$0.50/month  
-**URL Format:** `http://kia-paintshop-dashboard-{account-id}.s3-website-{region}.amazonaws.com`
-
-**Option B: AWS Amplify (Production-like)**
-
-```bash
-# Prepare deployment package
-./scripts/deploy_dashboard.sh
-```
-
-Then choose one of:
-1. Manual upload via Amplify Console
-2. Connect to Git repository for auto-deployment
-3. Use S3 deployment (Option A)
-
-**Cost:** Free tier eligible  
-**URL Format:** `https://main.{amplify-app-id}.amplifyapp.com`
-
-See [Dashboard Deployment Guide](terraform/DASHBOARD_DEPLOYMENT.md) for detailed instructions.
-
-#### 5. Verify Deployment
-
-```bash
-# Test API endpoints
-cd terraform
-API_URL=$(terraform output -raw api_url)
-API_KEY=$(terraform output -raw api_key)
-
-# List variables
-curl -H "x-api-key: $API_KEY" "$API_URL/variables"
-
-# Get variable data
-curl -H "x-api-key: $API_KEY" "$API_URL/variables/PT_TEMP_TANK_1/data"
-
-# List alarms
-curl -H "x-api-key: $API_KEY" "$API_URL/alarms"
-```
-
-### 🗑️ Teardown
-
-To completely remove all infrastructure and avoid charges:
-
-```bash
-# Stop simulator
-pkill -f "python simulator.py"
-
-# Destroy infrastructure
-cd terraform
-terraform destroy -auto-approve
-
-# Verify complete cleanup
-cd ..
-./scripts/verify_cleanup.sh
-```
-
-**Cleanup Verification:**
-- ✅ S3 buckets deleted
-- ✅ DynamoDB tables removed
-- ✅ Lambda functions deleted
-- ✅ IoT Things and certificates removed
-- ✅ CloudWatch log groups deleted
-- ✅ API Gateway removed
-- ✅ IAM roles cleaned up
-
----
-
-## Project Structure
+## 🗂️ Estructura del Proyecto
 
 ```
-.
-├── terraform/              # Infrastructure as Code (12 files, ~88KB)
-│   ├── main.tf            # Main configuration
-│   ├── variables.tf       # Input variables
-│   ├── outputs.tf         # Output values
-│   ├── dynamodb.tf        # 4 DynamoDB tables
-│   ├── iot.tf             # IoT Core setup
-│   ├── s3.tf              # S3 bucket with lifecycle
-│   ├── monitoring.tf      # CloudWatch + SNS
-│   ├── lambda_ingest.tf   # Ingest Lambda config
-│   ├── lambda_process.tf  # Process Lambda config
-│   ├── lambda_statistics.tf # Statistics Lambda config
-│   ├── lambda_api.tf      # 5 API Lambda configs
-│   └── api_gateway.tf     # API Gateway with 5 endpoints
+📁 kia-paint-shop-iot-prototype/
 │
-├── simulator/             # Python IoT data simulator
-│   ├── simulator.py       # Main orchestrator
-│   ├── config_loader.py   # CSV variable loader (97 vars)
-│   ├── data_generator.py  # Realistic data generation
-│   ├── mqtt_publisher.py  # MQTT/TLS publishing
-│   ├── alarm_simulator.py # Alarm detection
-│   ├── config.yaml        # Simulator configuration
-│   ├── certs/             # IoT X.509 certificates (gitignored)
-│   └── README.md          # Simulator documentation
+├── 📂 project-docs/          ← 📚 TODA LA DOCUMENTACIÓN PARA TI
+│   ├── 🌟 GUIA_TESTING_PRINCIPIANTES.md  (EMPIEZA AQUÍ)
+│   ├── README_SIMPLE.md                   (Explicación sencilla)
+│   ├── PROYECTO_LISTO_PARA_TESTING.md     (Checklist)
+│   ├── DASHBOARD_VERIFICATION_GUIDE.md    (Testing del dashboard)
+│   ├── FINAL_VALIDATION_GUIDE.md          (Validación final)
+│   ├── DEPLOYMENT_INSTRUCTIONS.md         (Instrucciones de deploy)
+│   └── RESUMEN_PARA_TI.md                 (Resumen ejecutivo)
 │
-├── lambdas/               # AWS Lambda functions
-│   ├── ingest/            # IoT message ingestion
-│   │   ├── handler.py     # Main handler
-│   │   ├── validators.py  # JSON schema validation
-│   │   └── README.md
-│   ├── process/           # Anomaly detection & alarms
-│   │   ├── handler.py
-│   │   ├── anomaly_detector.py
-│   │   └── README.md
-│   ├── statistics/        # Statistical calculations
-│   │   ├── handler.py
-│   │   ├── statistics_calculator.py
-│   │   ├── requirements.txt  # numpy dependency
-│   │   └── README.md
-│   └── api/               # REST API handlers (5 endpoints)
-│       ├── list_variables.py
-│       ├── get_variable_data.py
-│       ├── list_alarms.py
-│       ├── acknowledge_alarm.py
-│       ├── get_statistics.py
-│       ├── auth_middleware.py    # API key auth
-│       ├── error_handler.py      # Error formatting
-│       └── README.md
-│
-├── dashboard/             # React + TypeScript frontend
-│   ├── src/
-│   │   ├── App.tsx        # Main layout
-│   │   ├── components/    # React components
-│   │   │   ├── VariableList.tsx
-│   │   │   ├── VariableChart.tsx
-│   │   │   ├── AlarmPanel.tsx
-│   │   │   ├── StatisticsCard.tsx
-│   │   │   └── ConnectionStatus.tsx
-│   │   ├── hooks/         # Custom hooks
-│   │   │   └── useVariableData.ts
-│   │   ├── services/      # API client (axios)
-│   │   │   └── api.ts
-│   │   └── types/         # TypeScript definitions
-│   │       └── index.ts
-│   ├── public/
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── README.md
-│
-├── tests/                 # Test suite (212+ tests)
-│   ├── property/          # Property-based tests (Hypothesis)
-│   │   ├── test_properties_config_loader.py
-│   │   ├── test_properties_data_generator.py
-│   │   ├── test_properties_alarm_generation.py
-│   │   ├── test_properties_mqtt_topics.py
-│   │   ├── test_properties_json_validation.py
-│   │   ├── test_properties_storage.py
-│   │   ├── test_properties_alarm_persistence.py
-│   │   ├── test_properties_statistics.py
-│   │   └── test_properties_api_roundtrip.py
-│   └── unit/              # Unit tests
-│       ├── test_alarm_simulator.py
-│       ├── test_ingest_handler.py
-│       ├── test_anomaly_detector.py
-│       ├── test_process_handler.py
-│       ├── test_list_variables.py
-│       ├── test_get_variable_data.py
-│       ├── test_list_alarms.py
-│       ├── test_acknowledge_alarm.py
-│       └── test_get_statistics.py
-│
-├── scripts/               # Management scripts
-│   ├── setup.sh           # Complete deployment automation
-│   ├── teardown.sh        # Safe resource destruction
-│   ├── check_costs.sh     # Cost monitoring
-│   ├── verify_cleanup.sh  # Cleanup verification
-│   ├── analyze_csvs.py    # CSV analysis tool
-│   ├── check_data.py      # Data validation
-│   ├── generate_report.py # Report generation
-│   ├── create_final_report.py # Final report creation
-│   └── README.md
-│
-├── docs/                  # Additional documentation
-│   ├── API.md             # REST API reference
-│   ├── VARIABLES.md       # Variable configuration guide
-│   ├── COSTS.md           # Cost analysis and optimization
-│   ├── TROUBLESHOOTING.md # Common issues and solutions
-│   ├── IOT_SETUP.md       # IoT Core setup guide
-│   ├── SECURITY.md        # Security configuration
-│   └── IAM_PERMISSIONS.md # IAM roles documentation
-│
-├── project-docs/          # Project documentation
-│   ├── GUIA_TESTING_PRINCIPIANTES.md  # Testing guide (Spanish)
-│   ├── DEPLOYMENT_INSTRUCTIONS.md     # Detailed deployment guide
-│   ├── VALIDATION_INSTRUCTIONS.md     # Validation procedures
-│   ├── DASHBOARD_VERIFICATION_GUIDE.md # Dashboard testing
-│   ├── PROYECTO_LISTO_PARA_TESTING.md # Project readiness (Spanish)
-│   ├── README_SIMPLE.md               # Beginner-friendly overview
-│   ├── RESUMEN_PARA_TI.md             # Summary for testers (Spanish)
-│   ├── INSTRUCCIONES_FINALES_PARA_TI.md # Final instructions (Spanish)
-│   ├── GIT_SETUP_COMPLETO.md          # Git setup guide (Spanish)
-│   └── FINAL_VALIDATION_GUIDE.md      # Final validation steps
-│
-├── reports/               # Project reports and analysis
-│   ├── PROJECT_HEALTH_REPORT_FINAL.md # Project status (9.8/10)
-│   ├── PROJECT_HEALTH_REPORT.md       # Previous health report
-│   ├── IAM_SECURITY_AUDIT.md          # Security audit results
-│   ├── CHECKPOINT_5_SUMMARY.md        # Checkpoint summaries
-│   ├── CHECKPOINT_9_VERIFICATION.md
-│   ├── TASK_10_COMPLETION_SUMMARY.md  # Task summaries
-│   ├── TASK_20_EXECUTIVE_SUMMARY.md
-│   ├── analysis_report.md             # Variable analysis
-│   ├── NEW_CHAT_SUMMARY.md            # Session summaries
-│   ├── session1ResolucionDeDudas.md
-│   ├── variableAnalisys-by-Amazon-Q.md
-│   └── posiblePlanTrabajo-SketchedByAmazonQ.md
-│
-├── attachments/           # Project attachments and references
-│   ├── Paint-LAY-OUT.pdf              # Paint shop layout
-│   ├── KMX-PA-PT-F-001.csv            # Pre-Treatment variables
-│   ├── KMX-PA-PE-F-001.csv            # E-Coat variables
-│   ├── KMX-PA-PE-F-001-Reporte-diario-laboratorio-ED.xlsx
-│   ├── Ejemplo-Template-KIA-VF_IMU26.pptx
-│   ├── Arquitectura-tecnica-actual-Paint-Shop.md
-│   ├── Hoja-definicion-inicial-reto.md
-│   ├── Guiones-Videos-Reto-KIA.md
-│   └── Rubrica-evaluacion.md
-│
-├── .env.example           # Environment template
-├── requirements.txt       # Python dependencies
-└── README.md              # This file (project overview)
+├── 📂 terraform/             ← Infraestructura (12 archivos)
+├── 📂 simulator/             ← Simulador IoT (5 módulos Python)
+├── 📂 lambdas/               ← 8 Lambda functions
+├── 📂 dashboard/             ← React + TypeScript frontend
+├── 📂 tests/                 ← 212+ tests
+├── 📂 scripts/               ← Scripts de utilidad
+├── 📂 docs/                  ← Documentación técnica
+├── 📂 reports/               ← Reportes del proyecto
+└── 📂 attachments/           ← Archivos del proyecto (PDFs, CSVs, etc.)
 ```
 
 ---
 
-## 🚀 Setup Rápido
+## ⚡ Quick Start (Resumen Rápido)
 
 ### Prerequisitos
 
-- AWS Account con credenciales configuradas
-- Terraform >= 1.5.0
-- Python >= 3.11
-- Node.js >= 18
-- AWS CLI >= 2.0
+Necesitas tener instalado:
+- ✅ AWS CLI (configurado con tus credenciales)
+- ✅ Terraform >= 1.5.0
+- ✅ Python >= 3.11
+- ✅ Node.js >= 18
+- ✅ Git
 
-### 1. Configurar Variables de Entorno
-
-```bash
-cp .env.example .env
-# Editar .env con tus valores de AWS
-```
-
-### 2. Desplegar Infraestructura
+### Pasos Básicos
 
 ```bash
-cd terraform
-terraform init
-terraform plan
-terraform apply
+# 1. Clonar el repositorio (si aún no lo has hecho)
+git clone <repository-url>
+cd kia-paint-shop-iot-prototype
+git checkout testing-branch
 
-# Guardar outputs
-terraform output -json > ../outputs.json
-```
+# 2. Leer la documentación
+cat project-docs/README_SIMPLE.md
+cat project-docs/GUIA_TESTING_PRINCIPIANTES.md
 
-### 3. Configurar Simulador
-
-```bash
-cd ../simulator
-
-# Instalar dependencias
-pip install -r ../requirements.txt
-
-# Descargar certificados IoT (se generan automáticamente con Terraform)
-# Los certificados estarán en simulator/certs/
-```
-
-### 4. Iniciar Simulador
-
-```bash
-python simulator.py --config config.yaml
-```
-
-### 5. Desplegar Dashboard
-
-```bash
-cd ../dashboard
-
-# Instalar dependencias
-npm install
-
-# Configurar API endpoint (desde outputs de Terraform)
-echo "REACT_APP_API_URL=$(cat ../outputs.json | jq -r '.api_url.value')" > .env.local
-echo "REACT_APP_API_KEY=$(cat ../outputs.json | jq -r '.api_key.value')" >> .env.local
-
-# Build y deploy
-npm run build
-```
-
-## Testing
-
-### 🧪 Test Suite Overview
-
-The project includes comprehensive testing with **212+ tests** covering all components.
-
-**Test Categories:**
-- **Property-Based Tests**: Validate universal correctness properties using Hypothesis
-- **Unit Tests**: Test specific behaviors and edge cases
-- **Integration Tests**: Verify end-to-end data flow (requires deployed infrastructure)
-
-### Running Tests
-
-#### All Tests
-```bash
-# Run complete test suite
-pytest tests/ -v
-
-# Run with coverage report
-pytest tests/ --cov=lambdas --cov=simulator --cov-report=html
-```
-
-#### Property-Based Tests
-```bash
-# Run property tests with statistics
-pytest tests/property/ -v --hypothesis-show-statistics
-
-# Run specific property test
-pytest tests/property/test_properties_data_generator.py -v
-```
-
-**Property Tests Validate:**
-1. ✅ Values within valid ranges
-2. ✅ Consistent generation intervals
-3. ✅ ISO 8601 timestamp format
-4. ✅ Alarm generation on threshold exceedance
-5. ✅ MQTT topic structure
-6. ✅ JSON validation
-7. ✅ TTL correctness
-8. ✅ DynamoDB key structure
-9. ✅ Data round-trip accuracy
-10. ✅ Statistical calculation correctness
-11. ✅ Alarm persistence
-
-#### Unit Tests
-```bash
-# Run unit tests only
-pytest tests/unit/ -v
-
-# Run specific component tests
-pytest tests/unit/test_ingest_handler.py -v
-pytest tests/unit/test_alarm_simulator.py -v
-```
-
-#### Dashboard Tests
-```bash
-cd dashboard
-
-# Run React component tests
-npm test
-
-# Run with coverage
-npm test -- --coverage
-```
-
-### Test Results
-
-```
-===================== test session starts ======================
-collected 212 items
-
-tests/property/test_properties_config_loader.py ....     [ 2%]
-tests/property/test_properties_data_generator.py ....    [ 4%]
-tests/property/test_properties_alarm_generation.py ...   [ 5%]
-tests/property/test_properties_mqtt_topics.py ....       [ 7%]
-tests/property/test_properties_json_validation.py ....   [ 9%]
-tests/property/test_properties_storage.py ........       [13%]
-tests/property/test_properties_alarm_persistence.py ...  [15%]
-tests/property/test_properties_statistics.py ........... [20%]
-tests/property/test_properties_api_roundtrip.py ....     [22%]
-tests/unit/test_alarm_simulator.py .................     [30%]
-tests/unit/test_ingest_handler.py ...................    [39%]
-tests/unit/test_anomaly_detector.py .................    [47%]
-tests/unit/test_process_handler.py ..................    [55%]
-tests/unit/test_list_variables.py ...................    [63%]
-tests/unit/test_get_variable_data.py ................    [71%]
-tests/unit/test_list_alarms.py ......................    [81%]
-tests/unit/test_acknowledge_alarm.py ................    [89%]
-tests/unit/test_get_statistics.py ...................    [100%]
-
-===================== 212 passed in 45.23s =====================
+# 3. Seguir la guía paso a paso
+# (Ver GUIA_TESTING_PRINCIPIANTES.md para instrucciones detalladas)
 ```
 
 ---
 
-## Cost Analysis
+## 🆘 ¿Necesitas Ayuda?
 
-### 💰 Monthly Cost Breakdown
+### Documentación Disponible
 
-**Actual Cost: $1.45 - $5.00/month** (3-10% of $50 budget)
+| Documento | Para Qué Sirve |
+|-----------|----------------|
+| **[README_SIMPLE.md](project-docs/README_SIMPLE.md)** | Entender el proyecto de forma sencilla |
+| **[GUIA_TESTING_PRINCIPIANTES.md](project-docs/GUIA_TESTING_PRINCIPIANTES.md)** | Guía completa paso a paso (PRINCIPAL) |
+| **[PROYECTO_LISTO_PARA_TESTING.md](project-docs/PROYECTO_LISTO_PARA_TESTING.md)** | Verificar que todo está listo |
+| **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | Soluciones a problemas comunes |
+| **[RESUMEN_PARA_TI.md](project-docs/RESUMEN_PARA_TI.md)** | Resumen ejecutivo del proyecto |
 
-| Service | Usage | Monthly Cost | Status |
-|---------|-------|--------------|--------|
-| **IoT Core** | 300K messages | $0.00 | ✅ Free Tier |
-| **Lambda** | 710K invocations | $0.00 | ✅ Free Tier |
-| **DynamoDB** | 500 MB, 400K ops | $0.41 | 💰 Paid |
-| **S3** | 2 GB storage | $0.04 | 💰 Paid |
-| **API Gateway** | 100K calls | $0.81 | 💰 Paid |
-| **EventBridge** | 300K events | $0.01 | 💰 Paid |
-| **CloudWatch** | 5 GB logs | $0.00 | ✅ Free Tier |
-| **X-Ray** | 100K traces | $0.00 | ✅ Free Tier |
-| **SNS** | 100 notifications | $0.00 | ✅ Free Tier |
-| **TOTAL** | | **$1.27 - $1.45** | ✅ **3% of budget** |
+### Recursos Adicionales
 
-### Cost Scenarios
+- **Estado del Proyecto**: [PROJECT_HEALTH_REPORT_FINAL.md](reports/PROJECT_HEALTH_REPORT_FINAL.md)
+- **Documentación Técnica**: Carpeta [docs/](docs/)
+- **Reportes**: Carpeta [reports/](reports/)
+- **Estructura del Proyecto**: [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)
 
-| Scenario | Usage Pattern | Monthly Cost |
-|----------|---------------|--------------|
-| **Development** | 8 hours/day | $1.45 |
-| **Continuous** | 24/7 operation | $3.50 |
-| **Production-like** | Multiple simulators | $8-12 |
-| **Maximum Load** | 10 simulators | $25-35 |
+---
 
-**All scenarios remain well within $50/month budget** ✅
+## 📊 Información del Proyecto
 
-### Cost Monitoring
+### Variables Monitoreadas
 
-```bash
-# Check current costs
-./scripts/check_costs.sh
+| Área | Variables | Descripción |
+|------|-----------|-------------|
+| **Pre-Treatment (PT)** | 48 | Limpieza y preparación de superficies |
+| **E-Coat (ED)** | 18 | Recubrimiento por electrodeposición |
+| **Production Control** | 34 | Monitoreo de producción |
+| **Total** | **100** | Prototipo completo |
 
-# View AWS Cost Explorer
-aws ce get-cost-and-usage \
-  --time-period Start=2026-02-01,End=2026-02-28 \
-  --granularity MONTHLY \
-  --metrics UnblendedCost
+### Componentes del Sistema
+
+```
+Simulador → IoT Core → Lambda (Ingest) → DynamoDB
+                     ↓
+                EventBridge → Lambda (Process) → Alarms
+                     ↓
+                Lambda (Statistics) → Aggregations
+                     ↓
+                API Gateway → React Dashboard
 ```
 
-### Cost Optimization Tips
+### Costos Estimados
 
-1. **Run simulator only when needed** - Stop when not testing
-2. **Enable TTL on DynamoDB** - Automatic data expiration (already enabled)
-3. **Use S3 lifecycle policies** - Archive to Glacier, delete after 90 days (already configured)
-4. **Set CloudWatch log retention** - 7 days (already configured)
-5. **Use on-demand billing** - No upfront costs (already configured)
-6. **Complete teardown** - Destroy infrastructure when done
-
-See [Cost Analysis Guide](docs/COSTS.md) for detailed breakdown and optimization strategies.
+- **Desarrollo**: $1.45/mes
+- **Continuo (24/7)**: $3.50/mes
+- **Presupuesto**: $50/mes
+- **Uso actual**: 3-10% del presupuesto ✅
 
 ---
 
-## Documentation
+## ✅ Checklist de Testing
 
-### 📚 Complete Documentation
+Usa este checklist para trackear tu progreso:
 
-| Document | Description |
-|----------|-------------|
-| **[README.md](README.md)** | Project overview and quick start (this file) |
-| **[DEPLOYMENT_INSTRUCTIONS.md](project-docs/DEPLOYMENT_INSTRUCTIONS.md)** | Detailed deployment guide |
-| **[GUIA_TESTING_PRINCIPIANTES.md](project-docs/GUIA_TESTING_PRINCIPIANTES.md)** | Testing guide for beginners (Spanish) |
-| **[PROJECT_HEALTH_REPORT_FINAL.md](reports/PROJECT_HEALTH_REPORT_FINAL.md)** | Complete project status (9.8/10) |
-| **[API.md](docs/API.md)** | Complete REST API reference with examples |
-| **[VARIABLES.md](docs/VARIABLES.md)** | Variable configuration guide (100 variables) |
-| **[COSTS.md](docs/COSTS.md)** | Detailed cost analysis and optimization |
-| **[SECURITY.md](docs/SECURITY.md)** | Security configuration and best practices |
-| **[IAM_PERMISSIONS.md](docs/IAM_PERMISSIONS.md)** | IAM roles and least privilege documentation |
-| **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | Common issues and solutions |
-| **[IOT_SETUP.md](docs/IOT_SETUP.md)** | IoT Core setup and configuration |
-
-### Component Documentation
-
-- **Simulator**: `simulator/README.md`
-- **Lambda Ingest**: `lambdas/ingest/README.md`
-- **Lambda Process**: `lambdas/process/README.md`
-- **Lambda Statistics**: `lambdas/statistics/README.md`
-- **API Handlers**: `lambdas/api/README.md`
-- **Dashboard**: `dashboard/README.md`
-- **Scripts**: `scripts/README.md`
-
-### API Endpoints
-
-```bash
-GET    /variables                          # List all 100 variables
-GET    /variables/{id}/data                # Get time-series data
-GET    /alarms                             # List alarms (filter by status)
-POST   /alarms/{id}/acknowledge            # Acknowledge alarm
-GET    /statistics/{variable_id}           # Get aggregated statistics
-```
-
-See [API Documentation](docs/API.md) for complete reference with curl examples.
+- [ ] 1. Leí README_SIMPLE.md y entiendo el proyecto
+- [ ] 2. Verifiqué que todo está listo (PROYECTO_LISTO_PARA_TESTING.md)
+- [ ] 3. Configuré mi entorno AWS
+- [ ] 4. Desplegué la infraestructura con Terraform
+- [ ] 5. Configuré y ejecuté el simulador
+- [ ] 6. Verifiqué que los datos llegan a DynamoDB
+- [ ] 7. Probé los endpoints del API
+- [ ] 8. Desplegué y verifiqué el dashboard
+- [ ] 9. Validé la generación de alarmas
+- [ ] 10. Verifiqué los costos en AWS
+- [ ] 11. Ejecuté los tests automatizados
+- [ ] 12. Documenté problemas encontrados
+- [ ] 13. Hice cleanup/teardown de recursos
+- [ ] 14. Completé el reporte de testing
 
 ---
 
-## Troubleshooting
+## 📝 Reporte de Testing
 
-### 🔧 Common Issues
+Al finalizar, debes crear un reporte con:
 
-#### Terraform Deployment Fails
+1. ✅ **Componentes probados** (lista de qué funcionó)
+2. ❌ **Problemas encontrados** (bugs, errores, issues)
+3. 💡 **Sugerencias de mejora** (opcional)
+4. 📊 **Evidencia** (screenshots, logs, outputs)
+5. ⏱️ **Tiempo invertido** (cuánto tardaste en cada fase)
+6. 💰 **Costos observados** (cuánto costó en AWS)
 
-**Issue**: `Error creating Lambda function`
-
-**Solutions:**
-1. Check IAM permissions
-2. Verify AWS credentials: `aws sts get-caller-identity`
-3. Ensure region is supported
-4. Check for resource name conflicts
-
-#### Simulator Won't Connect
-
-**Issue**: `MQTT connection refused` or `SSL handshake failed`
-
-**Solutions:**
-1. Verify certificates exist in `simulator/certs/`
-2. Check IoT endpoint: `terraform output iot_endpoint`
-3. Ensure certificate is attached to policy
-4. Test connectivity: `telnet <endpoint> 8883`
-
-#### No Data in Dashboard
-
-**Issue**: Dashboard loads but shows no variables/data
-
-**Solutions:**
-1. Verify simulator is running: `ps aux | grep simulator.py`
-2. Check API connectivity: `curl -H "x-api-key: $API_KEY" "$API_URL/variables"`
-3. Verify DynamoDB has data: `aws dynamodb scan --table-name kia-paintshop-sensor-data --limit 10`
-4. Check CloudWatch Logs for Lambda errors
-
-#### API Returns 401 Unauthorized
-
-**Issue**: `Missing or invalid API key`
-
-**Solutions:**
-1. Get correct API key: `terraform output api_key`
-2. Use correct header: `x-api-key: YOUR_KEY`
-3. Verify API key is associated with usage plan
-
-#### High Costs
-
-**Issue**: AWS bill higher than expected
-
-**Solutions:**
-1. Run cost check: `./scripts/check_costs.sh`
-2. Check for orphaned resources: `./scripts/verify_cleanup.sh`
-3. Verify simulator isn't running 24/7
-4. Ensure TTL is enabled on DynamoDB tables
-
-See [Troubleshooting Guide](docs/TROUBLESHOOTING.md) for complete solutions.
-
-### Getting Help
-
-1. **Check Documentation**: Review relevant docs in `docs/` directory
-2. **CloudWatch Logs**: `aws logs tail /aws/lambda/kia-paintshop-ingest --follow`
-3. **Debug Mode**: Run simulator with `--log-level DEBUG`
-4. **Verify Resources**: Use `./scripts/verify_cleanup.sh`
-
----
-## Security
-
-### 🔒 Security Features
-
-**Authentication & Authorization:**
-- ✅ X.509 certificate authentication for IoT devices
-- ✅ API key authentication for REST API
-- ✅ IAM roles with least privilege principle
-- ✅ Usage plans with rate limiting (1000 req/day, 100 req/sec)
-
-**Data Protection:**
-- ✅ Encryption at rest (DynamoDB, S3)
-- ✅ TLS 1.2+ for all communications (IoT Core, API Gateway)
-- ✅ No hardcoded credentials in code
-- ✅ Environment variable configuration for sensitive data
-
-**Network Security:**
-- ✅ S3 bucket public access blocked
-- ✅ CORS configured appropriately for dashboard
-- ✅ API Gateway throttling enabled
-- ✅ CloudWatch logging for audit trail
-
-**Best Practices:**
-- Store API keys in environment variables, never in code
-- Rotate IoT certificates regularly
-- Review CloudWatch Logs for unauthorized access attempts
-- Use AWS Secrets Manager for production deployments
+**Template**: Ver sección "Reporte de Testing" en [GUIA_TESTING_PRINCIPIANTES.md](project-docs/GUIA_TESTING_PRINCIPIANTES.md)
 
 ---
 
-## Technology Stack
+## 🎓 Glosario Rápido
 
-### Backend
+- **MVP**: Minimum Viable Product (Producto Mínimo Viable)
+- **IoT**: Internet of Things (Internet de las Cosas)
+- **Lambda**: Función serverless de AWS
+- **DynamoDB**: Base de datos NoSQL de AWS
+- **Terraform**: Herramienta de Infrastructure as Code
+- **Simulador**: Programa que genera datos de sensores falsos
+- **Dashboard**: Interfaz web para visualizar datos
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **Python** | 3.11 | Lambda functions & simulator |
-| **boto3** | >= 1.34.0 | AWS SDK |
-| **paho-mqtt** | Latest | IoT device simulation |
-| **numpy** | Latest | Statistical calculations |
-| **PyYAML** | Latest | Configuration management |
-
-### Frontend
-
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **React** | 18.2.0 | UI framework |
-| **TypeScript** | 5.3.3 | Type safety |
-| **TanStack Query** | 5.17.19 | Data fetching/caching |
-| **Recharts** | 2.10.4 | Data visualization |
-| **Tailwind CSS** | 3.4.1 | Styling |
-| **Axios** | 1.6.5 | HTTP client |
-
-### Infrastructure
-
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **Terraform** | >= 1.5.0 | Infrastructure as Code |
-| **AWS IoT Core** | - | MQTT message broker |
-| **AWS Lambda** | Python 3.11 | Serverless compute |
-| **DynamoDB** | - | NoSQL database |
-| **S3** | - | Object storage |
-| **API Gateway** | - | REST API |
-| **EventBridge** | - | Event orchestration |
-| **CloudWatch** | - | Monitoring & logging |
-
-### Testing
-
-| Technology | Purpose |
-|------------|---------|
-| **pytest** | Unit testing framework |
-| **Hypothesis** | Property-based testing |
-| **moto** | AWS service mocking |
-| **@testing-library/react** | React component testing |
+**Glosario completo**: Ver [GUIA_TESTING_PRINCIPIANTES.md](project-docs/GUIA_TESTING_PRINCIPIANTES.md)
 
 ---
 
-## Prototype Constraints
+## 🚨 Importante
 
-### 📝 Design Limitations
+### ⚠️ Antes de Empezar
 
-This is a **prototype**, not a production system. Key constraints:
+1. **No modifiques el código** - Solo estás probando, no desarrollando
+2. **Documenta todo** - Toma screenshots, copia logs, anota errores
+3. **Sigue el orden** - La guía está diseñada para seguirse en secuencia
+4. **Pide ayuda** - Si algo no funciona, pregunta antes de continuar
+5. **Verifica costos** - Revisa AWS Cost Explorer regularmente
 
-| Constraint | Value | Rationale |
-|------------|-------|-----------|
-| **Budget** | <$50/month | Cost control demonstration |
-| **Variables** | Maximum 100 | Prototype scope |
-| **Frequency** | 30-second intervals | Not extreme real-time |
-| **Retention** | 30 days (DynamoDB), 90 days (S3) | Cost optimization |
-| **Users** | <10 concurrent | Dashboard scalability |
-| **Infrastructure** | Fully ephemeral | Complete teardown capability |
+### 💰 Control de Costos
 
-### Production Considerations
+- **Apaga el simulador** cuando no lo estés usando
+- **Destruye la infraestructura** al terminar cada sesión de testing
+- **Verifica cleanup** con el script `verify_cleanup.sh`
+- **Revisa costos** diariamente en AWS Console
 
-For production deployment, consider:
-- Increase variable count and frequency
-- Add multi-region deployment
-- Implement user authentication (Cognito)
-- Add WebSocket support for real-time updates
-- Increase data retention periods
-- Add backup and disaster recovery
-- Implement CI/CD pipeline
-- Add comprehensive monitoring dashboards
-- Scale DynamoDB with provisioned capacity
-- Add CloudFront CDN for dashboard
+### 🔒 Seguridad
+
+- **No compartas** tus credenciales de AWS
+- **No subas** archivos `.env` a Git
+- **No expongas** API keys en screenshots
+- **Usa** el archivo `.env.example` como referencia
 
 ---
 
-## Contributing
+## 🎉 ¡Éxito!
 
-### 🤝 Development Guidelines
+Si completaste todo el testing y el proyecto funciona correctamente:
 
-This is a demonstration prototype. For improvements or suggestions:
-
-1. **Review Documentation**: Ensure you understand the architecture
-2. **Follow Conventions**: Use existing naming patterns and code style
-3. **Add Tests**: Include property-based and unit tests for new features
-4. **Update Docs**: Keep documentation in sync with code changes
-5. **Cost Awareness**: Ensure changes don't significantly increase costs
-
-### Code Style
-
-- **Python**: PEP 8, type hints, docstrings
-- **TypeScript**: ESLint, Prettier, strict mode
-- **Terraform**: terraform fmt, consistent naming
-
-### Testing Requirements
-
-- All new features must include tests
-- Property-based tests for correctness validation
-- Unit tests for specific behaviors
-- Maintain 100% test pass rate
+1. ✅ Completa tu reporte de testing
+2. ✅ Comparte tus hallazgos
+3. ✅ Celebra - ¡hiciste un gran trabajo! 🎊
 
 ---
 
-## License
+## 📞 Contacto
 
-**Prototipo interno para demostración - KIA Paint Shop Digitalization Project**
+Si tienes preguntas o encuentras problemas:
 
-This is an internal prototype for demonstration purposes. Not licensed for external use.
-
----
-
-## Support
-
-### 🆘 Getting Help
-
-For problems or questions:
-
-1. **Check Documentation**
-   - Review [Troubleshooting Guide](docs/TROUBLESHOOTING.md)
-   - Check [API Documentation](docs/API.md)
-   - Read [Variable Configuration](docs/VARIABLES.md)
-
-2. **Verify Logs**
-   - CloudWatch Logs: `aws logs tail /aws/lambda/kia-paintshop-ingest --follow`
-   - Simulator logs: Run with `--log-level DEBUG`
-
-3. **Run Diagnostics**
-   - Cost check: `./scripts/check_costs.sh`
-   - Cleanup verification: `./scripts/verify_cleanup.sh`
-
-4. **Contact Team**
-   - Internal support: Contact development team
-   - AWS Support: For AWS service issues
+1. **Revisa la documentación** en `project-docs/`
+2. **Consulta troubleshooting** en `docs/TROUBLESHOOTING.md`
+3. **Contacta al equipo** para soporte
 
 ---
 
-## Acknowledgments
+## 📌 Links Rápidos
 
-**Project Team:**
-- Architecture & Infrastructure
-- Backend Development
-- Frontend Development
-- Testing & Quality Assurance
-- Documentation
+### Documentación Principal
+- 🌟 [Guía de Testing Completa](project-docs/GUIA_TESTING_PRINCIPIANTES.md)
+- 📖 [Explicación Simple del Proyecto](project-docs/README_SIMPLE.md)
+- ✅ [Checklist de Preparación](project-docs/PROYECTO_LISTO_PARA_TESTING.md)
 
-**Technologies:**
-- AWS IoT Core & Serverless Services
-- React & TypeScript Community
-- Terraform & HashiCorp
-- Python & Open Source Libraries
-
----
-
-## Changelog
-
-### Version 1.0.0 (February 2026)
-
-**MVP Complete** ✅
-- ✅ Complete backend infrastructure (Terraform)
-- ✅ Data simulator with 100 variables
-- ✅ 8 Lambda functions (ingest, process, statistics, 5 API handlers)
-- ✅ REST API with 5 endpoints
-- ✅ React + TypeScript dashboard
-- ✅ 212+ tests (property-based + unit)
-- ✅ Comprehensive documentation
-- ✅ Management scripts (setup, teardown, cost monitoring)
-
-**Status**: Production-ready prototype  
-**Cost**: $1.45 - $5.00/month (3-10% of budget)  
-**Health Score**: 9.8/10
-
----
-
-## Quick Links
-
-- 📊 [Project Health Report](PROJECT_HEALTH_REPORT_FINAL.md)
-- 📖 [API Documentation](docs/API.md)
-- 💰 [Cost Analysis](docs/COSTS.md)
+### Documentación Técnica
+- 🏗️ [Estructura del Proyecto](PROJECT_STRUCTURE.md)
+- 📊 [Estado del Proyecto](reports/PROJECT_HEALTH_REPORT_FINAL.md)
+- 💰 [Análisis de Costos](docs/COSTS.md)
+- 🔒 [Seguridad](docs/SECURITY.md)
 - 🔧 [Troubleshooting](docs/TROUBLESHOOTING.md)
-- 📝 [Variable Configuration](docs/VARIABLES.md)
-- 🚀 [Deployment Instructions](DEPLOYMENT_INSTRUCTIONS.md)
+
+### Recursos
+- 📁 [Todos los Documentos](project-docs/)
+- 📊 [Reportes](reports/)
+- 📎 [Attachments](attachments/)
 
 ---
 
-**Last Updated**: February 19, 2026  
-**Version**: 1.0.0  
-**Status**: ✅ Production Ready
+**Versión**: v1.0.1-reorganized  
+**Branch**: testing-branch  
+**Última actualización**: 2026-02-19  
+**Estado**: ✅ Listo para testing
 
-**Note**: This is a prototype demonstration, NOT a production system. Designed to showcase capabilities with strict cost constraints (<$50/month).
+---
+
+<div align="center">
+
+**¡Buena suerte con el testing! 🚀**
+
+Si tienes dudas, empieza por leer [README_SIMPLE.md](project-docs/README_SIMPLE.md)
+
+</div>
